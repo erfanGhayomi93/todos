@@ -6,6 +6,7 @@ export default class App extends Component {
     return (
       <div>
           <Todos test = "test"/>
+                    <p> this is added p tag in develop branch</p>
       </div>
     )
   }
