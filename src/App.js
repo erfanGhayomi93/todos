@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Todos from "./component/todos"
+import Todos from "./component/todos";
 
 export default class App extends Component {
   render() {
