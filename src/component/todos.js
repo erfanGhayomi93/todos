@@ -13,23 +13,23 @@ export default class Todos extends Component {
         this.state = {
             todos: [],
             currentItem: {},
-            generateId: 0
+            generateId: 1
         }
     }
 
     handelSubmit(e) {
         e.preventDefault();
-        const { todos, currentItem } = this.state;
-        let currentTodo = {}
+        const { currentItem,generateId } = this.state;
+        let currentTodo = {};
 
         Object.assign(currentTodo, {
-            id: ++this.state.generateId
-        }, currentItem)
+            id: generateId
+        },currentItem)
 
-        this.setState({
-            todos: [currentTodo, ...todos]
-        })
-
+        this.setState((prevState)=>({
+            todos: [currentTodo, prevState.todos],
+            generateId : prevState.generateId +1        
+        }))
     }
 
     handelChange(e) {
@@ -49,15 +49,11 @@ export default class Todos extends Component {
     }
 
     handleDone(id) {
-        console.log(this.state.todos)
-
         const index = this.state.todos.findIndex(todo => todo.id === id);
         const todos = [...this.state.todos];
         const todo = { ...this.state.todos[index] };
         todo.done = !todo.done;
         todos[index] = todo;
-
-        console.log(todos)
 
         this.setState({
             todos
@@ -81,11 +77,9 @@ export default class Todos extends Component {
     }
 
     render() {
-        console.log(this.state.todos)
-
         let numDone = this.state.todos.filter(todo => todo.done);
         let numTodos = this.state.todos.filter(todo => !todo.done);
-        // console.log(this.state.todos)
+        console.log(this.state.todos)
 
 
         return (
