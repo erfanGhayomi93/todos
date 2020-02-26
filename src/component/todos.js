@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import Todo from './todo'
+import Todo from './todo';
+import Datepicker from './dataPicker'
+import 'react-modern-calendar-datepicker/lib/DatePicker.css';
 
 export default class Todos extends Component {
     constructor(props) {
@@ -8,27 +10,60 @@ export default class Todos extends Component {
         this.handelSubmit = this.handelSubmit.bind(this);
         this.handelChange = this.handelChange.bind(this);
         this.handleDone = this.handleDone.bind(this);
-        this.handleTrash = this.handleTrash.bind(this)
+        this.handleTrash = this.handleTrash.bind(this);
+        this.handleDate = this.handleDate.bind(this)
 
         this.state = {
             todos: [],
-            currentItem: {},
-            generateId: 1
+            currentItem: { text: "", done: false, trash: false },
+            deadLine: null
+
         }
+    }
+
+    componentDidMount() {
+        this.nameInput.focus();
+    }
+
+    handleDate(date) {
+        if (this.state.deadLine === date) return
+
+        this.setState({
+            deadLine: date
+        })
+    }
+
+    getDate() {
+        const currentTime = new Date().toLocaleTimeString();
+
+        return currentTime
     }
 
     handelSubmit(e) {
         e.preventDefault();
-        const { currentItem,generateId } = this.state;
+        const { currentItem, deadLine } = this.state;
         let currentTodo = {};
 
-        Object.assign(currentTodo, {
-            id: generateId
-        },currentItem)
+        if (currentItem.text.length === 0) {
+            alert("empty title task");
+            return
+        }
 
-        this.setState((prevState)=>({
-            todos: [currentTodo, prevState.todos],
-            generateId : prevState.generateId +1        
+        const currentTime = this.getDate();
+
+        if (deadLine === null) {
+            alert("select date")
+            return
+        }
+
+        Object.assign(currentTodo, {
+            id: currentTime,
+            deadLine
+        }, currentItem)
+
+        this.setState((prevState) => ({
+            todos: [currentTodo, ...prevState.todos],
+            currentItem: { text: "" }
         }))
     }
 
@@ -36,14 +71,21 @@ export default class Todos extends Component {
         const target = e.target;
         const value = target.value;
 
-        let todo = {
-            done: false,
-            trash: false,
-            text: value
+        if (!value) {
+            this.setState({
+                currentItem: {
+                    text: ""
+                }
+            })
+            return
         }
 
         this.setState({
-            currentItem: todo
+            currentItem: {
+                text: value,
+                done: false,
+                trash: false,
+            }
         })
 
     }
@@ -79,56 +121,88 @@ export default class Todos extends Component {
     render() {
         let numDone = this.state.todos.filter(todo => todo.done);
         let numTodos = this.state.todos.filter(todo => !todo.done);
-        console.log(this.state.todos)
-
+        // console.log(this.state)
 
         return (
-            <div>
-                <form onSubmit={this.handelSubmit}>
-                    <input onChange={this.handelChange} value={this.state.todos.text} />
-                    <button>submit</button>
+            <div className="mt-3 text-center w-75 mx-auto">
+                <form className="d-flex justify-content-center" onSubmit={this.handelSubmit}>
+                    <div className="flex-grow-1">
+                        <input
+                            className="pl-2 w-100"
+                            placeholder="task"
+                            ref={(input) => this.nameInput = input}
+                            onChange={this.handelChange}
+                            value={this.state.currentItem.text}
+                        />
+                    </div>
+
+                    <div className="">
+                        <Datepicker
+                            getDateProps={this.handleDate}
+                        />
+                    </div>
+
+                    <div>
+                        <button className="btn-success">submit</button>
+                    </div>
                 </form>
 
-                <h1>todos({numTodos.length}):</h1>
-                {
-                    this.state.todos
-                        .filter(todo => !todo.done)
-                        .map(todo => <Todo
-                            todo={todo}
-                            key={todo.id}
-                            doneProps={this.handleDone}
-                        />)
-                }
+                <div className="mt-5 text-center">
+                    <table className="table border table-hover">
+                        <thead>
+                            <tr className="bg-dark text-white">
+                                <th colSpan="4">todos({numTodos.length}):</th>
+                            </tr>
+                            <tr>
+                                <th>id</th>
+                                <th>title</th>
+                                <th>done</th>
+                                <th>deadline</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                this.state.todos
+                                    .filter(todo => !todo.done)
+                                    .map(todo => <Todo
+                                        todo={todo}
+                                        key={todo.id}
+                                        doneProps={this.handleDone}
+                                    />)
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
-                <h1>Done({numDone.length}):</h1>
-                {
-                    this.state.todos
-                        .filter(todo => todo.done)
-                        .map(todo => <Todo
-                            todo={todo}
-                            key={todo.id}
-                            doneProps={this.handleDone}
-                            trashProp={this.handleTrash}
-                        />)
-                }
-
+                <div className="text-center mt-5">
+                    <table className="table border table-hover">
+                        <thead>
+                            <tr className="bg-dark text-white">
+                                <th colSpan="5">Done({numDone.length}):</th>
+                            </tr>
+                            <tr>
+                                <th>id</th>
+                                <th>title</th>
+                                <th>done</th>
+                                <th>deadline</th>
+                                <th>trash</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                this.state.todos
+                                    .filter(todo => todo.done)
+                                    .map(todo => <Todo
+                                        todo={todo}
+                                        key={todo.id}
+                                        doneProps={this.handleDone}
+                                        trashProp={this.handleTrash}
+                                    />)
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         )
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        // console.log(nextProps, nextState);
-        return {
-
-        }
-    }
-
-    getSnapshotBeforeUpdate() {
-        // console.log(this.state)
-        return {}
-    }
-
-    componentDidUpdate() {
-        // console.log(this.state.todos)
     }
 }
