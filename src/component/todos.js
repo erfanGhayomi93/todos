@@ -16,7 +16,8 @@ export default class Todos extends Component {
         this.state = {
             todos: [],
             currentItem: { text: "", done: false, trash: false },
-            deadLine: null
+            deadLine: null,
+            type: "ALL"
 
         }
     }
@@ -65,6 +66,8 @@ export default class Todos extends Component {
             todos: [currentTodo, ...prevState.todos],
             currentItem: { text: "" }
         }))
+
+        this.nameInput.focus();
     }
 
     handelChange(e) {
@@ -119,9 +122,8 @@ export default class Todos extends Component {
     }
 
     render() {
-        let numDone = this.state.todos.filter(todo => todo.done);
-        let numTodos = this.state.todos.filter(todo => !todo.done);
-        // console.log(this.state)
+        let { todos, type } = this.state;
+        let todosNum = type === "ALL" ? todos.length : type === "DONE" ? todos.filter(todo => todo.done).length : type === "UNDONE" ? todos.filter(todo => !todo.done).length : -1
 
         return (
             <div className="mt-3 text-center w-75 mx-auto">
@@ -136,7 +138,7 @@ export default class Todos extends Component {
                         />
                     </div>
 
-                    <div className="">
+                    <div>
                         <Datepicker
                             getDateProps={this.handleDate}
                         />
@@ -147,38 +149,19 @@ export default class Todos extends Component {
                     </div>
                 </form>
 
+                <div className="mt-4 d-flex selectedType">
+                    <button className="btn-primary btn-block mt-2" onClick={() => this.setState({ type: "ALL" })}>all</button>
+                    <button className="btn-success btn-block" onClick={() => this.setState({ type: "DONE" })}>Done</button>
+                    <button className="btn-danger btn-block" onClick={() => this.setState({ type: "UNDONE" })}>unDone</button>
+                </div>
+
                 <div className="mt-5 text-center">
                     <table className="table border table-hover">
                         <thead>
                             <tr className="bg-dark text-white">
-                                <th colSpan="4">todos({numTodos.length}):</th>
-                            </tr>
-                            <tr>
-                                <th>id</th>
-                                <th>title</th>
-                                <th>done</th>
-                                <th>deadline</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {
-                                this.state.todos
-                                    .filter(todo => !todo.done)
-                                    .map(todo => <Todo
-                                        todo={todo}
-                                        key={todo.id}
-                                        doneProps={this.handleDone}
-                                    />)
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                <div className="text-center mt-5">
-                    <table className="table border table-hover">
-                        <thead>
-                            <tr className="bg-dark text-white">
-                                <th colSpan="5">Done({numDone.length}):</th>
+                                <th colSpan="5">{type}
+                                    ({todosNum}):
+                                </th>
                             </tr>
                             <tr>
                                 <th>id</th>
@@ -190,18 +173,42 @@ export default class Todos extends Component {
                         </thead>
                         <tbody>
                             {
-                                this.state.todos
-                                    .filter(todo => todo.done)
-                                    .map(todo => <Todo
-                                        todo={todo}
-                                        key={todo.id}
-                                        doneProps={this.handleDone}
-                                        trashProp={this.handleTrash}
-                                    />)
+                                type === "ALL" ?
+                                    todos
+                                        // .filter(todo => !todo.done)
+                                        .map(todo => <Todo
+                                            todo={todo}
+                                            key={todo.id}
+                                            doneProps={this.handleDone}
+                                            trashProp={this.handleTrash}
+
+                                        />)
+                                    : type === "DONE" ?
+                                        todos
+                                            .filter(todo => todo.done)
+                                            .map(todo => <Todo
+                                                todo={todo}
+                                                key={todo.id}
+                                                doneProps={this.handleDone}
+                                                trashProp={this.handleTrash}
+                                            />)
+                                        : type === "UNDONE" ?
+                                            todos
+                                                .filter(todo => !todo.done)
+                                                .map(todo => <Todo
+                                                    todo={todo}
+                                                    key={todo.id}
+                                                    doneProps={this.handleDone}
+                                                    trashProp={this.handleTrash}
+
+                                                />)
+                                            : null
                             }
                         </tbody>
                     </table>
                 </div>
+
+
             </div>
         )
     }
