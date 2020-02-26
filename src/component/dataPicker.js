@@ -11,7 +11,7 @@ const Datepicker = (props) => {
   };
 
   const [selectedDay, setSelectedDay] = useState(
-    minimumDate
+    null
   );
 
   useEffect(() => {
